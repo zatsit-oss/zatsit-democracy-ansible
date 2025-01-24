@@ -1,6 +1,7 @@
 - name: Set up system
-  hosts: all
+  hosts: web:database
   vars:
     ansible_user: "{{ deploy_user }}"
   roles:
     - system
+    - system_zatsit

@@ -1,0 +1,7 @@
+---
+- name: Restart Google Ops Agent
+  become: true
+  systemd:
+    name: "{{ ops_agent_service_name }}"
+    state: restarted
+    enabled: yes

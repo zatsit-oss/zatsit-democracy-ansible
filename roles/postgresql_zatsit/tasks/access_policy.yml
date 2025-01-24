@@ -1,0 +1,27 @@
+---
+- name: PostgreSQL | Allow remote connections on pg engine
+  become: true
+  lineinfile:
+    dest: "/etc/postgresql/{{ postgresql_version }}/main/conf.d/listen.conf"
+    regexp: '^#?listen_addresses='
+    line: "listen_addresses='{{ postgres_listen_addresses|default('localhost') }}'"
+    state: present
+    create: yes
+  notify: Restart PostgreSQL
+
+- name: PostgreSQL | Allow all remote connections in ph_hba
+  become: true
+  become_user: postgres
+  postgresql_pg_hba:
+    dest: /etc/postgresql/15/main/pg_hba.conf
+    contype: host
+    databases: "{{ database_name }}"
+    users: "{{ item.database_user }}"
+    address: "{{ item.address }}"
+    method: md5
+  notify: Restart PostgreSQL
+  retries: 10
+  delay: 10
+  loop:
+    - { database_user: "{{ database_user }}", address: "{{ hostvars[inventory_hostname].ansible_host }}/32" }
+    - { database_user: "{{ database_user }}", address: "0.0.0.0/0" }

@@ -1,0 +1,13 @@
+---
+- name: Create Ansible GCP credentials directory
+  file:
+    path: "/tmp/.ansible"
+    state: directory
+    mode: '0755'
+
+- name: Copy GCP credentials file to remote host
+  copy:
+    src: "{{ google_svcacc_keyfile }}"
+    dest: /tmp/.ansible/gcp_vault_secret_creds.json
+    mode: '0600'
+    remote_src: no

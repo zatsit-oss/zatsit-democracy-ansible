@@ -96,6 +96,7 @@
   args:
     chdir: "{{ release_dir }}"
     executable: /bin/bash
+  when: seed is defined
 
 - name: Precompile assets
   shell: "{{ fnm_command }} && {{ rvm_command }} && fnm exec bin/rake assets:precompile RAILS_ENV={{ env }}"

@@ -1,0 +1,55 @@
+---
+- name: Create PostgreSQL backup directory
+  become: true
+  file:
+    path: "{{ database_backup_dir }}"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_group }}"
+    mode: 0750
+    state: directory
+
+- name: Prepare pg_dump credentials
+  become: true
+  template:
+    src: pgpass.j2
+    dest: "/home/{{ deploy_user }}/.pgpass"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_group }}"
+    mode: 0600
+
+- name: Create PostgreSQL backup script
+  become: true
+  template:
+    src: backup_postgresql.sh.j2
+    dest: "{{ scripts_dir }}/backup_postgresql.sh"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_group }}"
+    mode: 0755
+
+- name: Create Google Cloud credentials directory
+  become: true
+  file:
+    path: "{{ database_backup_google_svcacc_key_basedir }}"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_group }}"
+    mode: 0750
+    state: directory
+
+- name: Copy the google service account key
+  become: true
+  copy:
+    content: "{{ r_secret_backup_svcacc_keyfile.data }}"
+    dest: "{{ database_backup_google_svcacc_key_basedir }}/{{ database_backup_google_svcacc_key_file }}"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_group }}"
+    mode: 0600
+
+- name: Cron to backup PostgreSQL
+  become: true
+  cron:
+    name: "Backup PostgreSQL"
+    minute: "0"
+    hour: "10,20"
+    job: "{{ scripts_dir }}/backup_postgresql.sh"
+    user: "{{ deploy_user }}"
+    cron_file: "consul_backup_postgresql"

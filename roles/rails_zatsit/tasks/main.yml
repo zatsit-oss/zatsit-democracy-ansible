@@ -1,0 +1,19 @@
+---
+- import_tasks: get_secrets.yml
+
+- name: Create database configuration
+  template:
+    src: "database.yml.j2"
+    dest: "{{ shared_dir }}/config/database.yml"
+
+- name: Generate secret key
+  shell: "{{ rvm_command }} && bin/rake secret RAILS_ENV={{ env }} EXECJS_RUNTIME=Disabled"
+  register: secret_key_base
+  args:
+    chdir: "{{ release_dir }}"
+    executable: /bin/bash
+
+- name: Create secrets configuration
+  template:
+    src: "secrets.yml.j2"
+    dest: "{{ shared_dir }}/config/secrets.yml"

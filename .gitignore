@@ -1,3 +1,13 @@
 *.retry
 /hosts
 /consul
+/*-keyfile.json
+/*_keyfile.json
+/group_vars/*
+!group_vars/all
+/inventories/*
+!/inventories/hosts.example
+/test.ym*l
+old
+/oauth2_*.secret
+/client_secret_*.json
