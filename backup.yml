@@ -1,0 +1,7 @@
+---
+- name: Configure backup routines
+  hosts: web:database
+  vars:
+    ansible_user: "{{ deploy_user }}"
+  roles:
+    - backup_zatsit

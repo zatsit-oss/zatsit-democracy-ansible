@@ -1,12 +1,15 @@
 ---
-- name: Create PostgreSQL backup directory
+- name: Create backup directories
   become: true
   file:
-    path: "{{ database_backup_dir }}"
+    path: "{{ item }}"
     owner: "{{ deploy_user }}"
     group: "{{ deploy_group }}"
     mode: 0750
     state: directory
+  loop:
+    - "{{ database_backup_dir }}"
+    - "{{ files_backup_dir }}"
 
 - name: Prepare pg_dump credentials
   become: true
@@ -17,19 +20,22 @@
     group: "{{ deploy_group }}"
     mode: 0600
 
-- name: Create PostgreSQL backup script
+- name: Create backup script
   become: true
   template:
-    src: backup_postgresql.sh.j2
-    dest: "{{ scripts_dir }}/backup_postgresql.sh"
+    src: "backup_{{ item }}.sh.j2"
+    dest: "{{ scripts_dir }}/backup_{{ item }}.sh"
     owner: "{{ deploy_user }}"
     group: "{{ deploy_group }}"
     mode: 0755
+  loop:
+    - postgresql
+    - files
 
 - name: Create Google Cloud credentials directory
   become: true
   file:
-    path: "{{ database_backup_google_svcacc_key_basedir }}"
+    path: "{{ backup_google_svcacc_key_file }}"
     owner: "{{ deploy_user }}"
     group: "{{ deploy_group }}"
     mode: 0750
@@ -39,17 +45,20 @@
   become: true
   copy:
     content: "{{ r_secret_backup_svcacc_keyfile.data }}"
-    dest: "{{ database_backup_google_svcacc_key_basedir }}/{{ database_backup_google_svcacc_key_file }}"
+    dest: "{{ backup_google_svcacc_key_file }}/{{ backup_google_svcacc_key_file }}"
     owner: "{{ deploy_user }}"
     group: "{{ deploy_group }}"
     mode: 0600
 
-- name: Cron to backup PostgreSQL
+- name: Cron to backup scripts
   become: true
   cron:
-    name: "Backup PostgreSQL"
+    name: "Backup {{ item | capitalize }}"
     minute: "0"
     hour: "10,20"
-    job: "{{ scripts_dir }}/backup_postgresql.sh"
+    job: "{{ scripts_dir }}/backup_{{ item }}.sh"
     user: "{{ deploy_user }}"
-    cron_file: "consul_backup_postgresql"
+    cron_file: "consul_backup_{{ item }}"
+  loop:
+    - postgresql
+    - files

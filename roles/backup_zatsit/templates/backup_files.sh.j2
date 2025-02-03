@@ -1,0 +1,23 @@
+#!/usr/bin/bash
+{{ ansible_managed | comment }}
+
+# Variables
+BUCKET="{{ backup_google_storage_bucket }}"
+KEYFILE="{{ backup_google_svcacc_key_file }}/{{ backup_google_svcacc_key_file }}"
+BASE_DIRECTORY="{{ shared_dir }}"
+DATE=$(date +"%Y%m%d%H%M%S")
+BACKUP_FILE="{{ files_backup_dir }}/${DATE}_shared_storage.sql.gz"
+
+
+# Backup
+tar -zxf ${BACKUP_FILE} -C ${BASE_DIRECTORY} storage/
+
+
+# Publish
+gcloud auth activate-service-account --key-file=${KEYFILE}
+gsutil cp ${BACKUP_FILE} gs://${BUCKET}/files/
+
+
+# Cleanup
+# Remove backups older than X days
+find {{ files_backup_dir }} -type f -mtime +{{ backup_rentention_days }} -exec rm {} \;

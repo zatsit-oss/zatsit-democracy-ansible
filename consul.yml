@@ -3,3 +3,4 @@
 - import_playbook: system.yml
 - import_playbook: db.yml
 - import_playbook: app.yml
+- import_playbook: backup.yml

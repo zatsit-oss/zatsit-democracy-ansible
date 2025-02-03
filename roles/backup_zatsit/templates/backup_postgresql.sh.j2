@@ -2,8 +2,8 @@
 {{ ansible_managed | comment }}
 
 # Variables
-BUCKET="{{ database_backup_google_storage_bucket }}"
-KEYFILE="{{ database_backup_google_svcacc_key_basedir }}/{{ database_backup_google_svcacc_key_file }}"
+BUCKET="{{ backup_google_storage_bucket }}"
+KEYFILE="{{ backup_google_svcacc_key_file }}/{{ backup_google_svcacc_key_file }}"
 DATABASE="{{ database_name }}"
 DATE=$(date +"%Y%m%d%H%M%S")
 BACKUP_FILE="{{ database_backup_dir }}/${DATE}_{{ database_name }}.sql.gz"
@@ -20,4 +20,4 @@ gsutil cp ${BACKUP_FILE} gs://${BUCKET}/database/
 
 # Cleanup
 # Remove backups older than X days
-find {{ database_backup_dir }} -type f -mtime +{{ database_backup_rentention_days }} -exec rm {} \;
+find {{ database_backup_dir }} -type f -mtime +{{ backup_rentention_days }} -exec rm {} \;
