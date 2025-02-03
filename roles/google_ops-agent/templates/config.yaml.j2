@@ -19,7 +19,11 @@
 
 logging:
   receivers:
-    puma:
+    puma_access:
+      type: files
+      include_paths:
+        - "{{ puma_access_log }}"
+    puma_error:
       type: files
       include_paths:
         - "{{ puma_error_log }}"
@@ -32,17 +36,16 @@ logging:
       include_paths:
         - "{{ shared_dir }}/log/{{ env }}.log"
   processors:
-    # puma:
-    #   type: parse_multiline
+    puma_error_parse:
+      type: parse_regex
+      field: message
+      regex: "^(?<time>[\d-]* *[\d:]* *\+\d*) *(?<protocol>\w*) *(?<error_title>.*)\(\"(?<method>\w*) *(?<page>.*)\" *(?<attr1>[\w-]*) *\((?<address>.*)\)\): *\#<(?<middleware>.*)::(?<error_name>.*):(?<error_message>.*)>$"
+      time_key: time
+      time_format: "%Y-%m-%d %H:%M:%S %Z"
+    # puma_error_filter:
+    #   type: exclude_logs
     #   match_any:
-    #     - type: language_exceptions
-    #       language: ruby
-    #   extract_structure:
-    #     type: parse_regex
-    #     field: message
-    #     regex: "^$"
-    #     time_key: time
-    #     time_format: "%Y-%m-%dT%H:%M:%S.%L"
+    #     - message =~ "=== puma startup"
     app_parse:
       type: parse_regex
       field: message
@@ -60,9 +63,15 @@ logging:
       default_pipeline:
         receivers:
           - syslog
-      puma_pipeline:
+      puma_access_pipeline:
         receivers:
-          - puma
+          - puma_access
+      puma_error_pipeline:
+        receivers:
+          - puma_error
+        processors:
+          - puma_error_parse
+          # - puma_error_filter
       delayed_job_pipeline:
         receivers:
           - delayed_job
