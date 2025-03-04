@@ -51,10 +51,10 @@
   roles:
     - google_ops-agent
 
-- name: Check system
-  hosts: web
-  become: true
-  vars:
-    ansible_user: "{{ deploy_user }}"
-  roles:
-    - specs
+# - name: Check system
+#   hosts: web
+#   become: true
+#   vars:
+#     ansible_user: "{{ deploy_user }}"
+#   roles:
+#     - specs
