@@ -13,15 +13,16 @@
   become: true
   become_user: postgres
   postgresql_pg_hba:
-    dest: /etc/postgresql/15/main/pg_hba.conf
+    dest: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf"
     contype: host
     databases: "{{ database_name }}"
     users: "{{ item.database_user }}"
     address: "{{ item.address }}"
-    method: md5
+    method: scram-sha-256
   notify: Restart PostgreSQL
   retries: 10
   delay: 10
   loop:
+    - { database_user: "{{ database_user }}", address: "{{ hostvars[inventory_hostname].internal_ip }}/32" }
     - { database_user: "{{ database_user }}", address: "{{ hostvars[inventory_hostname].ansible_host }}/32" }
     - { database_user: "{{ database_user }}", address: "0.0.0.0/0" }
