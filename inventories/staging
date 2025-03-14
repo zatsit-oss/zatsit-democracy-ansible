@@ -1,0 +1,21 @@
+# Servers
+server01   ansible_host=35.205.212.131 internal_ip=10.132.0.3  ansible_user=glefebvre   ansible_port=22 ansible_ssh_extra_args='-o StrictHostKeyChecking=no' 
+
+
+# Groups
+
+## Applicative groups
+[web]
+server01
+
+[database]
+server01
+
+## Technical groups
+[servers:children]
+web
+database
+
+## Environment groups
+[staging:children]
+servers
