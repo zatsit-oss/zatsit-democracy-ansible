@@ -35,7 +35,7 @@
 - name: Create Google Cloud credentials directory
   become: true
   file:
-    path: "{{ backup_google_svcacc_key_file }}"
+    path: "{{ backup_google_svcacc_key_basedir }}"
     owner: "{{ deploy_user }}"
     group: "{{ deploy_group }}"
     mode: 0750
@@ -45,7 +45,7 @@
   become: true
   copy:
     content: "{{ r_secret_backup_svcacc_keyfile.data }}"
-    dest: "{{ backup_google_svcacc_key_file }}/{{ backup_google_svcacc_key_file }}"
+    dest: "{{ backup_google_svcacc_key_basedir }}/{{ backup_google_svcacc_key_file }}"
     owner: "{{ deploy_user }}"
     group: "{{ deploy_group }}"
     mode: 0600

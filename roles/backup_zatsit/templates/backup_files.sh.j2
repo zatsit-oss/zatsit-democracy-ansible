@@ -3,7 +3,7 @@
 
 # Variables
 BUCKET="{{ backup_google_storage_bucket }}"
-KEYFILE="{{ backup_google_svcacc_key_file }}/{{ backup_google_svcacc_key_file }}"
+KEYFILE="{{ backup_google_svcacc_key_basedir }}/{{ backup_google_svcacc_key_file }}"
 BASE_DIRECTORY="{{ shared_dir }}"
 DATE=$(date +"%Y%m%d%H%M%S")
 BACKUP_FILE="{{ files_backup_dir }}/${DATE}_shared_storage.sql.gz"
