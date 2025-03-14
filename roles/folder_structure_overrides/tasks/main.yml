@@ -1,0 +1,22 @@
+---
+- name: Check that CONSUL DEMOCRACY assets folder exists
+  stat:
+    path: "{{ consul_dir }}/current/app/assets"
+  register: consul_repo_assets
+
+- name: Rename logo_header.png file
+  copy:
+    src: "{{ consul_dir }}/current/app/assets/images/logo_header.png"
+    dest: "{{ consul_dir }}/current/app/assets/images/logo_header.png.orig"
+    remote_src: yes
+  when: consul_repo_assets.stat.exists == True
+
+- name: Remove the old logo_header.png file
+  ansible.builtin.file:
+    path: "{{ consul_dir }}/current/app/assets/images/logo_header.png"
+    state: absent
+
+- name: Copy overrides sources on orig files
+  copy:
+      src: "assets/"
+      dest: "{{ consul_dir }}/current/app/assets/"

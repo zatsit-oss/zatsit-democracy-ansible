@@ -17,6 +17,7 @@
     ansible_user: "{{ deploy_user }}"
   roles:
     - folder_structure
+    - folder_structure_overrides
     - ruby
     - nodejs
     - rails
