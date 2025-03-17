@@ -10,7 +10,9 @@ BACKUP_FILE="{{ files_backup_dir }}/${DATE}_shared_storage.sql.gz"
 
 
 # Backup
-tar -zxf ${BACKUP_FILE} -C ${BASE_DIRECTORY} storage/
+pushd ${BASE_DIRECTORY}/storage/
+tar -zcf ${BACKUP_FILE} .
+popd
 
 
 # Publish
