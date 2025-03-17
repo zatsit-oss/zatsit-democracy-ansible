@@ -1,0 +1,3 @@
+---
+- name: Restart Puma
+  include_tasks: restart_puma.yml

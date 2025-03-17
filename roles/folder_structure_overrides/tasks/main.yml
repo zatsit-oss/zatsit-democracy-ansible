@@ -24,6 +24,7 @@
 
 - name: Copy overrides sources on orig files
   copy:
-      src: "assets/"
-      dest: "{{ consul_dir }}/current/app/assets/"
-  when: consul_repo_assets_logo_header.stat.exists == True
+    src: "assets/"
+    dest: "{{ consul_dir }}/current/app/assets/"
+  notify:
+    - Restart Puma
