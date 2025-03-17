@@ -3,6 +3,17 @@
   hosts: database
   vars:
     ansible_user: "{{ deploy_user }}"
+  pre_tasks:
+    - include_role:
+        name: google_secret-manager
+    - include_tasks: tasks/get_secrets.yml
+    - set_fact:
+        f_database_user: "{{ r_secret_db_user.data }}"
+        f_database_password: "{{ r_secret_db_password.data }}"
+
   roles:
-    - postgresql
+    - role: postgresql
+      vars:
+        database_user: "{{ f_database_user }}"
+        database_password: "{{ f_database_password }}"
     - postgresql_zatsit

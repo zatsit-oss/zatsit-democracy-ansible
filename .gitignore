@@ -15,3 +15,4 @@
 old
 /oauth2_*.secret
 /client_secret_*.json
+dummy
