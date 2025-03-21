@@ -1,0 +1,83 @@
+---
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# <== Enter custom agent configurations in this file.
+# See https://cloud.google.com/stackdriver/docs/solutions/agents/ops-agent/configuration
+# for more details.
+
+logging:
+  receivers:
+    puma_access:
+      type: files
+      include_paths:
+        - "{{ puma_access_log }}"
+    puma_error:
+      type: files
+      include_paths:
+        - "{{ puma_error_log }}"
+    delayed_job:
+      type: files
+      include_paths:
+        - "{{ shared_dir }}/log/delayed_job.log"
+    app:
+      type: files
+      include_paths:
+        - "{{ shared_dir }}/log/{{ env }}.log"
+  processors:
+    puma_error_parse:
+      type: parse_regex
+      field: message
+      regex: "^(?<time>[\d-]* *[\d:]* *\+\d*) *(?<protocol>\w*) *(?<error_title>.*)\(\"(?<method>\w*) *(?<page>.*)\" *(?<attr1>[\w-]*) *\((?<address>.*)\)\): *\#<(?<middleware>.*)::(?<error_name>.*):(?<error_message>.*)>$"
+      time_key: time
+      time_format: "%Y-%m-%d %H:%M:%S %Z"
+    # puma_error_filter:
+    #   type: exclude_logs
+    #   match_any:
+    #     - message =~ "=== puma startup"
+    app_parse:
+      type: parse_regex
+      field: message
+      regex: "^., \[(?<time>[\d-]*T[\d:]*).\d* #\d*\] *(?<severity>[^ ]*) -- : \[?(?<_progname>[\w-]*)\]? *(?<message>.*)$"
+      time_key: time
+      time_format: "%Y-%m-%dT%H:%M:%S.%L"
+    app_filter:
+      type: exclude_logs
+      match_any:
+        - jsonPayload.message =~ "Delayed::Backend::ActiveRecord::Job Load"
+    # app_clean_color:
+    #   regex: "\x1B\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]"
+  service:
+    pipelines:
+      default_pipeline:
+        receivers:
+          - syslog
+      puma_access_pipeline:
+        receivers:
+          - puma_access
+      puma_error_pipeline:
+        receivers:
+          - puma_error
+        processors:
+          - puma_error_parse
+          # - puma_error_filter
+      delayed_job_pipeline:
+        receivers:
+          - delayed_job
+      app_pipeline:
+        receivers:
+          - app
+        processors:
+          - app_parse
+          - app_filter

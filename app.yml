@@ -1,6 +1,6 @@
 ---
 - name: Set up web server
-  hosts: all
+  hosts: web
   become: true
   vars:
     ansible_user: "{{ deploy_user }}"
@@ -9,23 +9,34 @@
     - nginx
 
 - name: Set up CONSUL DEMOCRACY
-  hosts: all
+  hosts: web
   become: true
   become_user: "{{ deploy_user }}"
   vars:
     # https://github.com/ansible/proposals/issues/89
     ansible_user: "{{ deploy_user }}"
+  pre_tasks:
+    - include_role:
+        name: google_secret-manager
+    - include_tasks: tasks/get_secrets.yml
+    - set_fact:
+        f_database_user: "{{ r_secret_db_user.data }}"
+        f_database_password: "{{ r_secret_db_password.data }}"
   roles:
     - folder_structure
+    - folder_structure_overrides
     - ruby
     - nodejs
-    - rails
-    - email
+    - role: rails
+      vars:
+        database_user: "{{ f_database_user }}"
+        database_password: "{{ f_database_password }}"
+    - rails_zatsit
     - queue
     - puma
 
 - name: Post-installation tasks
-  hosts: all
+  hosts: web
   become: true
   vars:
     ansible_user: "{{ deploy_user }}"
@@ -34,7 +45,7 @@
     - timezone
 
 - name: Install Errbit
-  hosts: all
+  hosts: web
   become: true
   vars:
     ansible_user: "{{ deploy_user }}"
@@ -45,10 +56,16 @@
       become_user: "{{ deploy_user }}"
       when: errbit|bool
 
-- name: Check system
-  hosts: all
+- name: Install Google Ops Agent
+  hosts: web
   become: true
-  vars:
-    ansible_user: "{{ deploy_user }}"
   roles:
-    - specs
+    - google_ops-agent
+
+# - name: Check system
+#   hosts: web
+#   become: true
+#   vars:
+#     ansible_user: "{{ deploy_user }}"
+#   roles:
+#     - specs

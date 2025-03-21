@@ -1,10 +1,18 @@
 ---
+- name: Get distribution codename in specs
+  shell: lsb_release -c --short
+  register: distro_codename
+
 - when: distro_codename.stdout == "focal" or distro_codename.stdout == "jammy" or not lookup("env", "CI")
   block:
     - when: domain is defined
       block:
-        - action: uri url=https://{{ server_hostname }} return_content=yes validate_certs=False
+        - uri:
+            url: https://{{ server_hostname }}
+            return_content: yes
+            validate_certs: yes
           register: webpage_https_with_domain
+          delegate_to: localhost
 
         - fail:
             msg: "service is not happy {{ webpage_https_with_domain.content }}"
@@ -19,8 +27,12 @@
 
     - when: domain is not defined
       block:
-        - action: uri url=http://127.0.0.1 return_content=yes validate_certs=False
+        - uri:
+            url: http://127.0.0.1
+            return_content: yes
+            validate_certs: yes
           register: webpage_https
+          delegate_to: localhost
 
         - fail:
             msg: "service is not happy {{ webpage_https.content }}"

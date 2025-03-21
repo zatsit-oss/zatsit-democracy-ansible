@@ -1,5 +1,5 @@
 - name: Create deploy user
-  hosts: all
+  hosts: web:database
   become: yes
   roles:
     - { role: user, when: ansible_user != deploy_user }

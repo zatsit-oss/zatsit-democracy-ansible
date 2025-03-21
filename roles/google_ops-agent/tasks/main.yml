@@ -1,0 +1,16 @@
+---
+- name: Ensure Google Ops Agent is installed
+  become: true
+  apt:
+    name: "{{ ops_agent_package_name }}"
+    state: present
+
+- name: Copy the Google Ops Agent configuration file
+  become: true
+  template:
+    src: config.yaml.j2
+    dest: "{{ ops_agent_config_file }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart Google Ops Agent

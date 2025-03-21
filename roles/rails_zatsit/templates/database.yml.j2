@@ -1,0 +1,12 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  host: {{ database_hostname }}
+  pool: 5
+  schema_search_path: "public,shared_extensions"
+  username: {{ r_secret_db_user.data }}
+  password: {{ r_secret_db_password.data }}
+
+{{ env }}:
+  <<: *default
+  database: {{ database_name }}

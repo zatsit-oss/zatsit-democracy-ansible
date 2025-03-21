@@ -1,0 +1,25 @@
+---
+- name: Ensure correct permissions of deploy user home files
+  file:
+    path: "{{ home_dir }}/{{ item }}"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_group }}"
+    mode: 0644
+    state: file
+  loop:
+    - .bashrc
+    - .bash_profile
+    - .bash_logout
+    - .profile
+  failed_when: false
+
+- name: Create /opt directory and subdirectories
+  become: true
+  file:
+    path: "{{ item }}"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_group }}"
+    mode: 0755
+    state: directory
+  loop:
+    - "{{ scripts_dir }}"

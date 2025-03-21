@@ -1,0 +1,64 @@
+---
+- name: Create backup directories
+  become: true
+  file:
+    path: "{{ item }}"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_group }}"
+    mode: 0750
+    state: directory
+  loop:
+    - "{{ database_backup_dir }}"
+    - "{{ files_backup_dir }}"
+
+- name: Prepare pg_dump credentials
+  become: true
+  template:
+    src: pgpass.j2
+    dest: "/home/{{ deploy_user }}/.pgpass"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_group }}"
+    mode: 0600
+
+- name: Create backup script
+  become: true
+  template:
+    src: "backup_{{ item }}.sh.j2"
+    dest: "{{ scripts_dir }}/backup_{{ item }}.sh"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_group }}"
+    mode: 0755
+  loop:
+    - postgresql
+    - files
+
+- name: Create Google Cloud credentials directory
+  become: true
+  file:
+    path: "{{ backup_google_svcacc_key_basedir }}"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_group }}"
+    mode: 0750
+    state: directory
+
+- name: Copy the google service account key
+  become: true
+  copy:
+    content: "{{ r_secret_backup_svcacc_keyfile.data }}"
+    dest: "{{ backup_google_svcacc_key_basedir }}/{{ backup_google_svcacc_key_file }}"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_group }}"
+    mode: 0600
+
+- name: Cron to backup scripts
+  become: true
+  cron:
+    name: "Backup {{ item | capitalize }}"
+    minute: "0"
+    hour: "10,20"
+    job: "{{ scripts_dir }}/backup_{{ item }}.sh"
+    user: "{{ deploy_user }}"
+    cron_file: "consul_backup_{{ item }}"
+  loop:
+    - postgresql
+    - files

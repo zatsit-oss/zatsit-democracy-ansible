@@ -1,0 +1,4 @@
+[submodule "submodules/ansible-private"]
+	path = submodules/ansible-private
+	url = git@github.com:zatsit-oss/zatsitdemocracy-ansible-private.git
+	branch = feat/env-dev

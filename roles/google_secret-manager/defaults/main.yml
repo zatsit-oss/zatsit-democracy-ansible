@@ -1,0 +1,3 @@
+---
+# Name of the Google service account keyfile to copy to the remote host
+google_svcacc_keyfile: "zatsit-democracy-dev-ansible-svcacc-keyfile.json"
