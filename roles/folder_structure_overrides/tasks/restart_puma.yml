@@ -1,4 +1,10 @@
 ---
+- name: Precompile assets
+  shell: "{{ fnm_command }} && {{ rvm_command }} && fnm exec bin/rake assets:precompile RAILS_ENV={{ env }}"
+  args:
+    chdir: "{{ release_dir }}"
+    executable: /bin/bash
+
 - name: Get user UID
   shell: "id -u"
   register: current_uid

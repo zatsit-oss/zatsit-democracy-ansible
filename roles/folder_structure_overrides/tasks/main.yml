@@ -6,7 +6,7 @@
 
 - name: Check that CONSUL DEMOCRACY logo_header.png exists
   stat:
-    path: "{{ consul_dir }}/current/app/assets/images/logo_header.pn"
+    path: "{{ consul_dir }}/current/app/assets/images/logo_header.png"
   register: consul_repo_assets_logo_header
 
 - name: Rename logo_header.png file
@@ -21,6 +21,8 @@
     path: "{{ consul_dir }}/current/app/assets/images/logo_header.png"
     state: absent
   when: consul_repo_assets_logo_header.stat.exists == True
+  notify:
+    - Restart Puma
 
 - name: Copy overrides sources on orig files
   copy:
