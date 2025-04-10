@@ -1,0 +1,34 @@
+---
+- name: Copy Puma service file to the systemd folder
+  template:
+    src: "delayed_job.service"
+    dest: "{{ home_dir }}/.config/systemd/user/{{ delayed_job_service_unit_name }}.service"
+
+- name: Get distribution codename
+  shell: lsb_release -c --short
+  register: distro_codename
+
+- when: distro_codename.stdout == "focal" or distro_codename.stdout == "jammy" or not lookup("env", "CI")
+  block:
+    - name: Check if user has access to systemd while running ansible tasks
+      stat:
+        path: "/var/lib/systemd/linger/{{ deploy_user }}"
+      register: linger_enabled
+
+    - name: Enable systemd access if needed
+      command: "loginctl enable-linger {{ deploy_user }}"
+      when: not linger_enabled.stat.exists
+
+    - name: Get user UID
+      shell: "id -u"
+      register: current_uid
+
+    - name: Enable delayed_jobs queue
+      systemd:
+        name: "{{ delayed_job_service_unit_name }}.service"
+        daemon_reload: true
+        enabled: true
+        state: started
+        scope: user
+      environment:
+        XDG_RUNTIME_DIR: "/run/user/{{ current_uid.stdout }}"

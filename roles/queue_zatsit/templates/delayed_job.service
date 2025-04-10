@@ -1,0 +1,19 @@
+[Unit]
+Description=Delayed job for consul ({{ env }})
+After=network.target
+Requires=puma_consul_{{ env }}.service
+
+[Service]
+Type=forking
+WorkingDirectory={{ release_dir }}
+ExecStart=/bin/bash -lc 'source ~/.rvm/scripts/rvm && bundle exec bin/delayed_job -m -n 2 start'
+ExecStop=/bin/bash -lc 'source ~/.rvm/scripts/rvm && bundle exec bin/delayed_job -m -n 2 stop'
+ExecReload=/bin/kill -USR1 $MAINPID
+Environment=EXECJS_RUNTIME=Disabled
+Environment=RAILS_ENV={{ env }}
+Restart=always
+RestartSec=1
+SyslogIdentifier=delayed_job
+
+[Install]
+WantedBy=default.target
