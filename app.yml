@@ -33,6 +33,7 @@
         database_password: "{{ f_database_password }}"
     - rails_zatsit
     - queue
+    - queue_zatsit
     - puma
 
 - name: Post-installation tasks
